@@ -43,57 +43,59 @@ func (m *MockEC2Client) DeleteNetworkInterface(ctx context.Context, params *ec2.
 	return m.DeleteNetworkInterfaceFunc(ctx, params, opts...)
 }
 
-// Unit test for DeleteWorkMailOrganization
+// Unit test for DeleteWorkMailOrganization.
 func TestMockDeleteWorkMailOrganization(t *testing.T) {
-	// Mock the AWS configuration loader
+	t.Parallel()
+	// Mock the AWS configuration loader.
 	mockLoader := &MockAWSConfigLoader{
 		LoadConfigFunc: func(_ context.Context, _ string) (aws.Config, error) {
-			// Return a dummy AWS config here
+			// Return a dummy AWS config here.
 			return aws.Config{}, nil
 		},
 	}
 
-	// Call the LoadConfig method on the mock loader
+	// Call the LoadConfig method on the mock loader.
 	cfg, err := mockLoader.LoadConfig(context.TODO(), "us-east-1")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	// Assert the returned config (you can further assert the values if needed)
+	// Assert the returned config (you can further assert the values if needed).
 	if cfg.Region != "" {
 		t.Errorf("Expected empty region, got %s", cfg.Region)
 	}
 
 	mockClient := &MockWorkMailClient{
 		DeleteOrganizationFunc: func(ctx context.Context, params *workmail.DeleteOrganizationInput, optFns ...func(*workmail.Options)) (*workmail.DeleteOrganizationOutput, error) {
-			// Simulate success
+			// Simulate success.
 			return &workmail.DeleteOrganizationOutput{}, nil
 		},
 	}
 
-	// Call the function under test
+	// Call the function under test.
 	err = awsutils.DeleteWorkMailOrganization(t, "test-org-id", mockClient)
 
-	// Assert no error
+	// Assert no error.
 	assert.NoError(t, err)
 }
 
 func TestMockFailureDeleteWorkMailOrganization(t *testing.T) {
-	// Mock the AWS configuration loader
+	t.Parallel()
+	// Mock the AWS configuration loader.
 	mockLoader := &MockAWSConfigLoader{
 		LoadConfigFunc: func(_ context.Context, _ string) (aws.Config, error) {
-			// Return a dummy AWS config here
+			// Return a dummy AWS config here.
 			return aws.Config{}, nil
 		},
 	}
 
-	// Call the LoadConfig method on the mock loader
+	// Call the LoadConfig method on the mock loader.
 	cfg, err := mockLoader.LoadConfig(context.TODO(), "us-east-1")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	// Assert the returned config (you can further assert the values if needed)
+	// Assert the returned config (you can further assert the values if needed).
 	if cfg.Region != "" {
 		t.Errorf("Expected empty region, got %s", cfg.Region)
 	}
@@ -104,30 +106,31 @@ func TestMockFailureDeleteWorkMailOrganization(t *testing.T) {
 		},
 	}
 
-	// Call the function under test
+	// Call the function under test.
 	err = awsutils.DeleteWorkMailOrganization(t, "test-org-id", mockClient)
 
-	// Assert  error
+	// Assert  error.
 	assert.ErrorContainsf(t, err, "failed to delete WorkMail organization", err.Error())
 }
 
-// TestRemoveENI tests the RemoveENI function
+// TestRemoveENI tests the RemoveENI function.
 func TestMockRemoveENI(t *testing.T) {
-	// Mock the AWS configuration loader
+	t.Parallel()
+	// Mock the AWS configuration loader.
 	mockLoader := &MockAWSConfigLoader{
 		LoadConfigFunc: func(_ context.Context, _ string) (aws.Config, error) {
-			// Return a dummy AWS config here
+			// Return a dummy AWS config here.
 			return aws.Config{}, nil
 		},
 	}
 
-	// Call the LoadConfig method on the mock loader
+	// Call the LoadConfig method on the mock loader.
 	cfg, err := mockLoader.LoadConfig(context.TODO(), "us-east-1")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	// Assert the returned config (you can further assert the values if needed)
+	// Assert the returned config (you can further assert the values if needed).
 	if cfg.Region != "" {
 		t.Errorf("Expected empty region, got %s", cfg.Region)
 	}
@@ -138,7 +141,7 @@ func TestMockRemoveENI(t *testing.T) {
 					{
 						NetworkInterfaceId: aws.String("eni-12345678"),
 						VpcId:              aws.String("vpc-123456"),
-						Attachment:         nil, // Simulating an unused ENI
+						Attachment:         nil, // Simulating an unused ENI.
 					},
 				},
 			}, nil
@@ -158,21 +161,22 @@ func TestMockRemoveENI(t *testing.T) {
 }
 
 func TestMockFailiureRemoveENI(t *testing.T) {
-	// Mock the AWS configuration loader
+	t.Parallel()
+	// Mock the AWS configuration loader.
 	mockLoader := &MockAWSConfigLoader{
 		LoadConfigFunc: func(_ context.Context, region string) (aws.Config, error) {
-			// Return a dummy AWS config here
+			// Return a dummy AWS config here.
 			return aws.Config{}, nil
 		},
 	}
 
-	// Call the LoadConfig method on the mock loader
+	// Call the LoadConfig method on the mock loader.
 	cfg, err := mockLoader.LoadConfig(context.TODO(), "us-east-1")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	// Assert the returned config (you can further assert the values if needed)
+	// Assert the returned config (you can further assert the values if needed).
 	if cfg.Region != "" {
 		t.Errorf("Expected empty region, got %s", cfg.Region)
 	}

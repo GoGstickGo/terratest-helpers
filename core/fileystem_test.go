@@ -18,12 +18,14 @@ type MockFileSystem struct {
 // Mock ReadDir method
 func (m *MockFileSystem) ReadDir(dirname string) ([]os.DirEntry, error) {
 	args := m.Called(dirname)
+
 	return args.Get(0).([]os.DirEntry), args.Error(1)
 }
 
 // Mock RemoveAll method
 func (m *MockFileSystem) RemoveAll(path string) error {
 	args := m.Called(path)
+
 	return args.Error(0)
 }
 
@@ -64,6 +66,7 @@ func (m MockDirEntry) Info() (fs.FileInfo, error) {
 }
 
 func TestMockClearFolder(t *testing.T) {
+	t.Parallel()
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 
@@ -98,6 +101,7 @@ func TestMockClearFolder(t *testing.T) {
 }
 
 func TestMockUpdateVarsFile(t *testing.T) {
+	t.Parallel()
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 
@@ -135,6 +139,7 @@ func TestMockUpdateVarsFile(t *testing.T) {
 }
 
 func TestMockRestoreVarsFile(t *testing.T) {
+	t.Parallel()
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 

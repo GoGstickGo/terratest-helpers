@@ -1,4 +1,4 @@
-package terragrunt
+package terragrunt_test
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/GoGstickGo/terratest-helpers/core"
 	"github.com/GoGstickGo/terratest-helpers/pkg/parameters"
+	"github.com/GoGstickGo/terratest-helpers/pkg/terragrunt"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -54,6 +55,7 @@ func (m *MockSleeper) Sleep(duration time.Duration) {
 }
 
 func TestMockTgApply_Success(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -71,7 +73,7 @@ func TestMockTgApply_Success(t *testing.T) {
 	}
 
 	// Call the function under test
-	err := TgApply(t, options, mockExecutor, config, cmdMockExecutor)
+	err := terragrunt.Apply(t, options, mockExecutor, config, cmdMockExecutor)
 
 	// Assertions
 	assert.NoError(t, err)
@@ -79,6 +81,7 @@ func TestMockTgApply_Success(t *testing.T) {
 }
 
 func TestMockTgDestroy_Success(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -96,7 +99,7 @@ func TestMockTgDestroy_Success(t *testing.T) {
 	}
 
 	// Call the function under test
-	err := TgDestroy(t, options, mockExecutor, config, cmdMockExecutor, false)
+	err := terragrunt.Destroy(t, options, mockExecutor, config, cmdMockExecutor, false)
 
 	// Assertions
 	assert.NoError(t, err)
@@ -104,6 +107,7 @@ func TestMockTgDestroy_Success(t *testing.T) {
 }
 
 func TestMockTgDestroy_Failure(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -119,7 +123,7 @@ func TestMockTgDestroy_Failure(t *testing.T) {
 	config := core.RunTime{}
 
 	// Call the function under test
-	err := TgDestroy(t, options, mockExecutor, config, cmdMockExecutor, false)
+	err := terragrunt.Destroy(t, options, mockExecutor, config, cmdMockExecutor, false)
 
 	// Assertions
 	assert.Error(t, err)
@@ -128,6 +132,7 @@ func TestMockTgDestroy_Failure(t *testing.T) {
 }
 
 func TestMockTgApply_Failure(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -146,7 +151,7 @@ func TestMockTgApply_Failure(t *testing.T) {
 	// You can create a mock for plugin_cache.ClearFolder if it interacts with external systems
 
 	// Call the function under test
-	err := TgApply(t, options, mockExecutor, config, cmdMockExecutor)
+	err := terragrunt.Apply(t, options, mockExecutor, config, cmdMockExecutor)
 
 	// Assertions
 	assert.Error(t, err)
@@ -155,6 +160,7 @@ func TestMockTgApply_Failure(t *testing.T) {
 }
 
 func TestMockPauseTest(t *testing.T) {
+	t.Parallel()
 	// Create mock logger
 	mockLogger := new(MockLogger)
 
@@ -180,7 +186,7 @@ func TestMockPauseTest(t *testing.T) {
 	mockSleeper.On("Sleep", pauseDuration).Return()
 
 	// Call the function under test
-	PauseTest(t, config, mockLogger, mockSleeper)
+	terragrunt.PauseTest(t, config, mockLogger, mockSleeper)
 
 	// Assertions
 	mockLogger.AssertExpectations(t)
@@ -209,18 +215,18 @@ func TestTerragrunt(t *testing.T) {
 	})
 
 	// Create an instance of the real executor
-	executor := &RealTerragruntExecutor{}
-	cmdExecutor := &RealCommandExecutor{}
-	logger := &RealLogger{}
-	sleeper := &RealSleeper{}
+	executor := &terragrunt.RealTerragruntExecutor{}
+	cmdExecutor := &terragrunt.RealCommandExecutor{}
+	logger := &terragrunt.RealLogger{}
+	sleeper := &terragrunt.RealSleeper{}
 
 	defer func() {
-		if err := TgDestroy(t, iamOptions, executor, config, cmdExecutor, true); err != nil {
+		if err := terragrunt.Destroy(t, iamOptions, executor, config, cmdExecutor, true); err != nil {
 			t.Fatalf("Error: %v\n", err)
 		}
 	}()
 
-	if err := TgApply(t, iamOptions, executor, config, cmdExecutor); err != nil {
+	if err := terragrunt.Apply(t, iamOptions, executor, config, cmdExecutor); err != nil {
 		t.Fatalf("Error: %v\n", err)
 	}
 
@@ -234,12 +240,12 @@ func TestTerragrunt(t *testing.T) {
 	})
 
 	defer func() {
-		if err := TgDestroy(t, iam2Options, executor, config, cmdExecutor, false); err != nil {
+		if err := terragrunt.Destroy(t, iam2Options, executor, config, cmdExecutor, false); err != nil {
 			t.Fatalf("Error: %v\n", err)
 		}
 	}()
 
-	if err := TgApply(t, iam2Options, executor, config, cmdExecutor); err != nil {
+	if err := terragrunt.Apply(t, iam2Options, executor, config, cmdExecutor); err != nil {
 		t.Fatalf("Error: %v\n", err)
 	}
 
@@ -248,5 +254,5 @@ func TestTerragrunt(t *testing.T) {
 	assert.Equal(t, policy2Arn, "arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest2-us-east-1", "Policy arn should match arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest-us-east-1")
 
 	// Pause test
-	PauseTest(t, config, logger, sleeper)
+	terragrunt.PauseTest(t, config, logger, sleeper)
 }

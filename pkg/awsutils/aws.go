@@ -62,7 +62,7 @@ func RemoveENI(t *testing.T, vpcID string, svc EC2Client) (int32, error) {
 
 			_, deleteErr := svc.DeleteNetworkInterface(context.TODO(), deleteInput)
 			if deleteErr != nil {
-				fmt.Printf("error deleting ENI: %v", deleteErr)
+				logger.Log(t, "Error deleting ENI", deleteErr) // Log the error for debugging purposes("error deleting ENI: %v", deleteErr).
 			} else {
 				counter++
 			}

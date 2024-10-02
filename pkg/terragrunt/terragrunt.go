@@ -51,6 +51,7 @@ func (e *RealCommandExecutor) RunCommand(cmdName string, args []string, dir stri
 	}
 
 	output, err := cmd.CombinedOutput()
+
 	return output, err
 }
 
@@ -123,10 +124,12 @@ func tGiNit(t *testing.T, terra *terraform.Options, config core.RunTime, executo
 		}
 		return fmt.Errorf("%v\nOutput:\n%s", err, output)
 	}
+	logger.Log(t, "terragrunt init completed")
+
 	return nil
 }
 
-func TgApply(t *testing.T, options *terraform.Options, executor Executor, config core.RunTime, cmdExecutor CommandExecutor) error {
+func Apply(t *testing.T, options *terraform.Options, executor Executor, config core.RunTime, cmdExecutor CommandExecutor) error {
 
 	if config.IsPluginCache {
 		if err := tGiNit(t, options, config, cmdExecutor); err != nil {
@@ -157,7 +160,7 @@ func TgApply(t *testing.T, options *terraform.Options, executor Executor, config
 	return nil
 }
 
-func TgDestroy(t *testing.T, options *terraform.Options, executor Executor, config core.RunTime, cmdExecutor CommandExecutor, restore bool) error {
+func Destroy(t *testing.T, options *terraform.Options, executor Executor, config core.RunTime, cmdExecutor CommandExecutor, restore bool) error {
 	logger.Log(t, "Defer func started")
 
 	if config.IsPluginCache {
