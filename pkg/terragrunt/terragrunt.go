@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/GoGstickGo/terratest-helpers/core"
 	"github.com/GoGstickGo/terratest-helpers/pkg/awsutils"
@@ -53,26 +52,6 @@ func (e *RealCommandExecutor) RunCommand(cmdName string, args []string, dir stri
 	output, err := cmd.CombinedOutput()
 
 	return output, err
-}
-
-type Logger interface {
-	Log(t *testing.T, args ...interface{})
-}
-
-type RealLogger struct{}
-
-func (RealLogger) Log(t *testing.T, args ...interface{}) {
-	logger.Log(t, args...)
-}
-
-type Sleeper interface {
-	Sleep(duration time.Duration)
-}
-
-type RealSleeper struct{}
-
-func (RealSleeper) Sleep(duration time.Duration) {
-	time.Sleep(duration)
 }
 
 func tGiNit(t *testing.T, terra *terraform.Options, config core.RunTime, executor CommandExecutor) error {
@@ -205,11 +184,6 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 		return fmt.Errorf("restore failed: %v", errs)
 	}
 	return nil
-}
-
-func PauseTest(t *testing.T, config core.RunTime, logger Logger, sleeper Sleeper) {
-	logger.Log(t, "Pause test for", config.Pause, "before starting destruction of the environment")
-	sleeper.Sleep(config.Pause)
 }
 
 /*func UpdateTerraformHook(dir, key, newLine string) error {

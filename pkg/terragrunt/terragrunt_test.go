@@ -9,6 +9,7 @@ import (
 	"github.com/GoGstickGo/terratest-helpers/core"
 	"github.com/GoGstickGo/terratest-helpers/pkg/parameters"
 	"github.com/GoGstickGo/terratest-helpers/pkg/terragrunt"
+	"github.com/GoGstickGo/terratest-helpers/pkg/testutils"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -159,40 +160,6 @@ func TestMockTgApply_Failure(t *testing.T) {
 	mockExecutor.AssertExpectations(t)
 }
 
-func TestMockPauseTest(t *testing.T) {
-	t.Parallel()
-	// Create mock logger
-	mockLogger := new(MockLogger)
-
-	// Create mock sleeper
-	mockSleeper := new(MockSleeper)
-
-	// Prepare config
-	pauseDuration := 2 * time.Second
-	config := core.RunTime{
-		Pause: pauseDuration,
-	}
-
-	// Set up expectations for the logger
-	mockLogger.On(
-		"Log",
-		t,
-		"Pause test for",
-		pauseDuration,
-		"before starting destruction of the environment",
-	).Return()
-
-	// Set up expectations for the sleeper
-	mockSleeper.On("Sleep", pauseDuration).Return()
-
-	// Call the function under test
-	terragrunt.PauseTest(t, config, mockLogger, mockSleeper)
-
-	// Assertions
-	mockLogger.AssertExpectations(t)
-	mockSleeper.AssertExpectations(t)
-}
-
 func TestTerragrunt(t *testing.T) {
 	t.Parallel()
 
@@ -217,8 +184,8 @@ func TestTerragrunt(t *testing.T) {
 	// Create an instance of the real executor
 	executor := &terragrunt.RealTerragruntExecutor{}
 	cmdExecutor := &terragrunt.RealCommandExecutor{}
-	logger := &terragrunt.RealLogger{}
-	sleeper := &terragrunt.RealSleeper{}
+	logger := &testutils.RealLogger{}
+	sleeper := &testutils.RealSleeper{}
 
 	defer func() {
 		if err := terragrunt.Destroy(t, iamOptions, executor, config, cmdExecutor, true); err != nil {
@@ -254,5 +221,5 @@ func TestTerragrunt(t *testing.T) {
 	assert.Equal(t, policy2Arn, "arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest2-us-east-1", "Policy arn should match arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest-us-east-1")
 
 	// Pause test
-	terragrunt.PauseTest(t, config, logger, sleeper)
+	testutils.PauseTest(t, config, logger, sleeper)
 }
