@@ -1,11 +1,10 @@
-package aws
+package awsutils
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	"github.com/GoGstickGo/terratest-helpers/core"
 	"github.com/GoGstickGo/terratest-helpers/pkg/parameters"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -33,7 +32,7 @@ type EC2Client interface {
 
 func LoadEC2Client(region string) (*ec2.Client, error) {
 	// Load AWS configuration
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(parameters.AWSRegion))
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %v", err)
 	}
@@ -42,8 +41,8 @@ func LoadEC2Client(region string) (*ec2.Client, error) {
 	return ec2.NewFromConfig(cfg), nil
 }
 
-func RemoveENI(t *testing.T, vpcID string, config core.RunTime, svc EC2Client) (int32, error) {
-	var counter int32 = 0
+func RemoveENI(t *testing.T, vpcID string, svc EC2Client) (int32, error) {
+	var counter int32
 
 	logger.Log(t, "Remove unused ENIs in VPC Id:", vpcID)
 
@@ -75,7 +74,7 @@ func RemoveENI(t *testing.T, vpcID string, config core.RunTime, svc EC2Client) (
 	return counter, nil
 }
 
-func DeleteWorkMailOrganization(t *testing.T, config core.RunTime, orgID string, client WorkMailClient) error {
+func DeleteWorkMailOrganization(t *testing.T, orgID string, client WorkMailClient) error {
 	// Load the default AWS configuration
 
 	logger.Log(t, "Remove Wokrmail ORGId:", orgID)

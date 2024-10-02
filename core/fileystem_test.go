@@ -1,4 +1,4 @@
-package core
+package core_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/GoGstickGo/terratest-helpers/core"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -67,8 +68,8 @@ func TestMockClearFolder(t *testing.T) {
 	mockFS := new(MockFileSystem)
 
 	// Define the configuration
-	cfg := RunTime{
-		Paths: FolderPaths{
+	cfg := core.RunTime{
+		Paths: core.FolderPaths{
 			TgDownloadDir: "test/download-dir",
 		},
 	}
@@ -88,7 +89,7 @@ func TestMockClearFolder(t *testing.T) {
 	mockFS.On("RemoveAll", filepath.Join(cfg.Paths.TgDownloadDir, "folder1")).Return(nil)
 	mockFS.On("RemoveAll", filepath.Join(cfg.Paths.TgDownloadDir, "folder2")).Return(nil)
 
-	err := ClearFolder(t, cfg, mockFS)
+	err := core.ClearFolder(t, cfg, mockFS)
 	if err != nil {
 		t.Errorf("ClearFolder returned error: %v", err)
 	}
@@ -97,14 +98,13 @@ func TestMockClearFolder(t *testing.T) {
 }
 
 func TestMockUpdateVarsFile(t *testing.T) {
-
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 
 	// Define the configuration
-	cfg := RunTime{
+	cfg := core.RunTime{
 		VarsFile: "root_vars.hcl",
-		Paths: FolderPaths{
+		Paths: core.FolderPaths{
 			TerragruntDir: "test/terragrunt",
 		},
 		Content: "new content",
@@ -120,7 +120,7 @@ func TestMockUpdateVarsFile(t *testing.T) {
 	mockFS.On("WriteFile", rootVarsPath, []byte(cfg.Content), fs.FileMode(0644)).Return(nil)
 
 	// Call the function under test
-	result, err := UpdateVarsFile(t, cfg, mockFS)
+	result, err := core.UpdateVarsFile(t, cfg, mockFS)
 	if err != nil {
 		t.Errorf("UpdateVarsFile returned error: %v", err)
 	}
@@ -132,18 +132,16 @@ func TestMockUpdateVarsFile(t *testing.T) {
 
 	// Assert that all expectations were met
 	mockFS.AssertExpectations(t)
-
 }
 
 func TestMockRestoreVarsFile(t *testing.T) {
-
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 
 	// Define the configuration
-	cfg := RunTime{
+	cfg := core.RunTime{
 		VarsFile: "root_vars.hcl",
-		Paths: FolderPaths{
+		Paths: core.FolderPaths{
 			TerragruntDir: "test/terragrunt",
 		},
 		Content: "changed content",
@@ -154,7 +152,7 @@ func TestMockRestoreVarsFile(t *testing.T) {
 	// Set up the expected behavior for WriteFile
 	mockFS.On("WriteFile", rootVarsPath, []byte(cfg.Content), fs.FileMode(0644)).Return(nil)
 
-	if err := RestoreVarsFile(t, cfg, mockFS); err != nil {
+	if err := core.RestoreVarsFile(t, cfg, mockFS); err != nil {
 		t.Errorf("RestoreVarsFile returned error: %v", err)
 	}
 

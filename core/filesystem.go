@@ -40,7 +40,6 @@ func (OsFileSystem) WriteFile(filename string, data []byte, perm fs.FileMode) er
 // clearFolder removes all subfolders within the specified directory, excluding a specific subfolder.
 // It takes a FolderConfig struct as input containing the paths to relevant directories.
 func ClearFolder(t *testing.T, cfg RunTime, fs FileSystem) error {
-
 	// Log the start of cache folder clearing
 	logger.Log(t, "Cache folder clearing in progress")
 

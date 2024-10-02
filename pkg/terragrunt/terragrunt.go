@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"github.com/GoGstickGo/terratest-helpers/core"
-	"github.com/GoGstickGo/terratest-helpers/pkg/aws"
+	"github.com/GoGstickGo/terratest-helpers/pkg/awsutils"
 	"github.com/GoGstickGo/terratest-helpers/pkg/parameters"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 // TerragruntExecutor abstracts Terragrunt execution methods
-type TerragruntExecutor interface {
+type Executor interface {
 	TgApplyAllE(t *testing.T, options *terraform.Options) (string, error)
 	TgDestroyAllE(t *testing.T, options *terraform.Options) (string, error)
 	// Add other methods like TgInitAllE, TgDestroyAllE if needed
@@ -126,7 +126,7 @@ func tGiNit(t *testing.T, terra *terraform.Options, config core.RunTime, executo
 	return nil
 }
 
-func TgApply(t *testing.T, options *terraform.Options, executor TerragruntExecutor, config core.RunTime, cmdExecutor CommandExecutor) error {
+func TgApply(t *testing.T, options *terraform.Options, executor Executor, config core.RunTime, cmdExecutor CommandExecutor) error {
 
 	if config.IsPluginCache {
 		if err := tGiNit(t, options, config, cmdExecutor); err != nil {
@@ -144,7 +144,7 @@ func TgApply(t *testing.T, options *terraform.Options, executor TerragruntExecut
 	output, err := executor.TgApplyAllE(t, options)
 	if err != nil {
 		if config.IsPluginCache {
-			//Remove cached files
+			// Remove cached files
 			if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
 				return fmt.Errorf("error clearing cache folder: %v", err)
 			}
@@ -157,14 +157,13 @@ func TgApply(t *testing.T, options *terraform.Options, executor TerragruntExecut
 	return nil
 }
 
-func TgDestroy(t *testing.T, options *terraform.Options, executor TerragruntExecutor, config core.RunTime, cmdExecutor CommandExecutor, restore bool) error {
+func TgDestroy(t *testing.T, options *terraform.Options, executor Executor, config core.RunTime, cmdExecutor CommandExecutor, restore bool) error {
 	logger.Log(t, "Defer func started")
 
 	if config.IsPluginCache {
 		if err := tGiNit(t, options, config, cmdExecutor); err != nil {
 			return fmt.Errorf("terragrunt init failed: %v", err)
 		}
-
 	}
 
 	logger.Log(t, "TerraGrunt destroy in progress")
@@ -177,7 +176,7 @@ func TgDestroy(t *testing.T, options *terraform.Options, executor TerragruntExec
 	}
 
 	if config.IsPluginCache {
-		//Remove cached files
+		// Remove cached files
 		if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
 			return fmt.Errorf("error clearing cache folder: %v", err)
 		}
@@ -185,7 +184,7 @@ func TgDestroy(t *testing.T, options *terraform.Options, executor TerragruntExec
 
 	var errs []error
 
-	ec2Client, err := aws.LoadEC2Client(parameters.AWSRegion)
+	ec2Client, err := awsutils.LoadEC2Client(parameters.AWSRegion)
 	if err != nil {
 		return fmt.Errorf("error loading EC2 client: %v", err)
 	}
@@ -195,7 +194,7 @@ func TgDestroy(t *testing.T, options *terraform.Options, executor TerragruntExec
 		if err = core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
 			errs = append(errs, fmt.Errorf("error restoring %s: %v", config.VarsFile, err))
 		}
-		if _, err := aws.RemoveENI(t, parameters.VPCId, config, ec2Client); err != nil {
+		if _, err := awsutils.RemoveENI(t, parameters.VPCId, ec2Client); err != nil {
 			errs = append(errs, fmt.Errorf("error deleting AWS EC2 ENIs: %v", err))
 		}
 	}

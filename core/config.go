@@ -41,7 +41,7 @@ func NewConfig() RunTime {
 
 	flag.Parse()
 
-	//set default values
+	// Set default values
 	if *homeDir == "" {
 		*homeDir, _ = os.UserHomeDir()
 	}

@@ -1,11 +1,11 @@
-package aws
+package awsutils_test
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	"github.com/GoGstickGo/terratest-helpers/core"
+	"github.com/GoGstickGo/terratest-helpers/pkg/awsutils"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
@@ -47,7 +47,7 @@ func (m *MockEC2Client) DeleteNetworkInterface(ctx context.Context, params *ec2.
 func TestMockDeleteWorkMailOrganization(t *testing.T) {
 	// Mock the AWS configuration loader
 	mockLoader := &MockAWSConfigLoader{
-		LoadConfigFunc: func(ctx context.Context, region string) (aws.Config, error) {
+		LoadConfigFunc: func(_ context.Context, _ string) (aws.Config, error) {
 			// Return a dummy AWS config here
 			return aws.Config{}, nil
 		},
@@ -71,11 +71,8 @@ func TestMockDeleteWorkMailOrganization(t *testing.T) {
 		},
 	}
 
-	// Define a fake config
-	config := core.RunTime{}
-
 	// Call the function under test
-	err = DeleteWorkMailOrganization(t, config, "test-org-id", mockClient)
+	err = awsutils.DeleteWorkMailOrganization(t, "test-org-id", mockClient)
 
 	// Assert no error
 	assert.NoError(t, err)
@@ -84,7 +81,7 @@ func TestMockDeleteWorkMailOrganization(t *testing.T) {
 func TestMockFailureDeleteWorkMailOrganization(t *testing.T) {
 	// Mock the AWS configuration loader
 	mockLoader := &MockAWSConfigLoader{
-		LoadConfigFunc: func(ctx context.Context, region string) (aws.Config, error) {
+		LoadConfigFunc: func(_ context.Context, _ string) (aws.Config, error) {
 			// Return a dummy AWS config here
 			return aws.Config{}, nil
 		},
@@ -107,11 +104,8 @@ func TestMockFailureDeleteWorkMailOrganization(t *testing.T) {
 		},
 	}
 
-	// Define a fake config
-	config := core.RunTime{}
-
 	// Call the function under test
-	err = DeleteWorkMailOrganization(t, config, "test-org-id", mockClient)
+	err = awsutils.DeleteWorkMailOrganization(t, "test-org-id", mockClient)
 
 	// Assert  error
 	assert.ErrorContainsf(t, err, "failed to delete WorkMail organization", err.Error())
@@ -121,7 +115,7 @@ func TestMockFailureDeleteWorkMailOrganization(t *testing.T) {
 func TestMockRemoveENI(t *testing.T) {
 	// Mock the AWS configuration loader
 	mockLoader := &MockAWSConfigLoader{
-		LoadConfigFunc: func(ctx context.Context, region string) (aws.Config, error) {
+		LoadConfigFunc: func(_ context.Context, _ string) (aws.Config, error) {
 			// Return a dummy AWS config here
 			return aws.Config{}, nil
 		},
@@ -154,10 +148,7 @@ func TestMockRemoveENI(t *testing.T) {
 		},
 	}
 
-	// Define a fake config
-	config := core.RunTime{}
-
-	counter, err := RemoveENI(t, "vpc-123456", config, mockClient)
+	counter, err := awsutils.RemoveENI(t, "vpc-123456", mockClient)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -169,7 +160,7 @@ func TestMockRemoveENI(t *testing.T) {
 func TestMockFailiureRemoveENI(t *testing.T) {
 	// Mock the AWS configuration loader
 	mockLoader := &MockAWSConfigLoader{
-		LoadConfigFunc: func(ctx context.Context, region string) (aws.Config, error) {
+		LoadConfigFunc: func(_ context.Context, region string) (aws.Config, error) {
 			// Return a dummy AWS config here
 			return aws.Config{}, nil
 		},
@@ -195,10 +186,7 @@ func TestMockFailiureRemoveENI(t *testing.T) {
 		},
 	}
 
-	// Define a fake config
-	config := core.RunTime{}
-
-	counter, err := RemoveENI(t, "vpc-123456", config, mockClient)
+	counter, err := awsutils.RemoveENI(t, "vpc-123456", mockClient)
 	if err == nil {
 		t.Fatalf("expected error, got %v", err)
 	}

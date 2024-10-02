@@ -225,8 +225,8 @@ func TestTerragrunt(t *testing.T) {
 	}
 
 	// IAM policy test cases
-	policy_arn := terraform.Output(t, iamOptions, "policy_arn")
-	assert.Equal(t, policy_arn, "arn:aws:iam::"+parameters.AWSAccountID+":policy/TestDummy-us-east-1", "Policy arn should match arn:aws:iam::"+parameters.AWSAccountID+":policy/TestDummy-us-east-1")
+	policyArn := terraform.Output(t, iamOptions, "policy_arn")
+	assert.Equal(t, policyArn, "arn:aws:iam::"+parameters.AWSAccountID+":policy/TestDummy-us-east-1", "Policy arn should match arn:aws:iam::"+parameters.AWSAccountID+":policy/TestDummy-us-east-1")
 
 	iam2Options := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir:    "../../example/app/iam2",
@@ -244,9 +244,9 @@ func TestTerragrunt(t *testing.T) {
 	}
 
 	// IAM policy test cases
-	policy2_arn := terraform.Output(t, iam2Options, "policy_arn")
-	assert.Equal(t, policy2_arn, "arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest2-us-east-1", "Policy arn should match arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest-us-east-1")
+	policy2Arn := terraform.Output(t, iam2Options, "policy_arn")
+	assert.Equal(t, policy2Arn, "arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest2-us-east-1", "Policy arn should match arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest-us-east-1")
 
-	//pause test
+	// Pause test
 	PauseTest(t, config, logger, sleeper)
 }

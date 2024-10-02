@@ -6,13 +6,13 @@ SHELL:=/bin/bash
 # Unit test via mock                           		  #
 ########################################################
 .PHONY: unit-test
-test:
+unit-test:
 	go test -v -count=1 -cover -run ^TestMock ./...
 ########################################################
 # Integration test                        			  #
 ########################################################
 .PHONY: integration-test-tg
-test-tg:
+integration-test-tg:
 	go test -v  -timeout 10m  -run ^TestTerragrunt$  ./pkg/terragrunt
 ########################################################
 # Lint                                                #
