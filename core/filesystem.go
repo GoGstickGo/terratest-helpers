@@ -64,7 +64,7 @@ func ClearFolder(t *testing.T, cfg RunTime, fs FileSystem) error {
 			}
 		}
 	}
-
+	logger.Log(t, "Cache folder cleared")
 	// Return nil to indicate success.
 	return nil
 }
@@ -89,6 +89,7 @@ func UpdateVarsFile(t *testing.T, cfg RunTime, fs FileSystem) ([]byte, error) {
 		return nil, fmt.Errorf("writeFile func failed to write %s: %v", cfg.VarsFile, err)
 	}
 
+	logger.Log(t, "Updated "+cfg.VarsFile)
 	return originalContent, nil
 }
 

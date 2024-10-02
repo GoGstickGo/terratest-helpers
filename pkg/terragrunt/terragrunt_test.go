@@ -2,7 +2,6 @@ package terragrunt_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type MockTerragruntExecutor struct {
@@ -77,7 +77,7 @@ func TestMockTgApply_Success(t *testing.T) {
 	err := terragrunt.Apply(t, options, mockExecutor, config, cmdMockExecutor)
 
 	// Assertions
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	mockExecutor.AssertExpectations(t)
 }
 
@@ -103,7 +103,7 @@ func TestMockTgDestroy_Success(t *testing.T) {
 	err := terragrunt.Destroy(t, options, mockExecutor, config, cmdMockExecutor, false)
 
 	// Assertions
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	mockExecutor.AssertExpectations(t)
 }
 
@@ -127,7 +127,7 @@ func TestMockTgDestroy_Failure(t *testing.T) {
 	err := terragrunt.Destroy(t, options, mockExecutor, config, cmdMockExecutor, false)
 
 	// Assertions
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "restore vars file failed")
 	mockExecutor.AssertExpectations(t)
 }
@@ -155,7 +155,7 @@ func TestMockTgApply_Failure(t *testing.T) {
 	err := terragrunt.Apply(t, options, mockExecutor, config, cmdMockExecutor)
 
 	// Assertions
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "restore vars file failed")
 	mockExecutor.AssertExpectations(t)
 }
@@ -163,8 +163,8 @@ func TestMockTgApply_Failure(t *testing.T) {
 func TestTerragrunt(t *testing.T) {
 	t.Parallel()
 
-	os.Setenv("TT_TERRAGRUNT_ROOT_DIR", "../../example")
-	os.Setenv("TT_PAUSE", "2")
+	t.Setenv("TT_TERRAGRUNT_ROOT_DIR", "../../example")
+	t.Setenv("TT_PAUSE", "2")
 	config := core.NewConfig()
 
 	originalContent, err := core.UpdateVarsFile(t, config, core.OsFileSystem{})
