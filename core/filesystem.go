@@ -50,7 +50,7 @@ func ClearFolder(t *testing.T, cfg RunTime, fs FileSystem) error {
 	entries, err := fs.ReadDir(cfg.Paths.TgDownloadDir)
 	if err != nil {
 		// Return an error if reading directory entries fails
-		return fmt.Errorf("failed to read directory: %v", err)
+		return fmt.Errorf("failed to read directory: %w", err)
 	}
 
 	// Iterate over directory entries.
@@ -63,7 +63,7 @@ func ClearFolder(t *testing.T, cfg RunTime, fs FileSystem) error {
 			// Attempt to remove the subfolder and its contents.
 			if err := fs.RemoveAll(subfolderPath); err != nil {
 				// Return an error if removal fails.
-				return fmt.Errorf("failed to remove subfolder %s: %v", subfolderPath, err)
+				return fmt.Errorf("failed to remove subfolder %s: %w", subfolderPath, err)
 			}
 		}
 	}
@@ -79,7 +79,7 @@ func UpdateVarsFile(t *testing.T, cfg RunTime, fs FileSystem) ([]byte, error) {
 	// Read the current content.
 	currentContent, err := fs.ReadFile(rootVarsPath)
 	if err != nil {
-		return nil, fmt.Errorf("readFile func failed to read %s: %v", cfg.VarsFile, err)
+		return nil, fmt.Errorf("readFile func failed to read %s: %w", cfg.VarsFile, err)
 	}
 
 	// Store the original content.
@@ -89,7 +89,7 @@ func UpdateVarsFile(t *testing.T, cfg RunTime, fs FileSystem) ([]byte, error) {
 	// Append or overwrite the content.
 	err = fs.WriteFile(rootVarsPath, []byte(cfg.Content), 0644)
 	if err != nil {
-		return nil, fmt.Errorf("writeFile func failed to write %s: %v", cfg.VarsFile, err)
+		return nil, fmt.Errorf("writeFile func failed to write %s: %w", cfg.VarsFile, err)
 	}
 
 	logger.Log(t, "Updated "+cfg.VarsFile)
