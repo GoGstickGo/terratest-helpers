@@ -21,11 +21,13 @@ type MockTerragruntExecutor struct {
 
 func (m *MockTerragruntExecutor) TgApplyAllE(t *testing.T, options *terraform.Options) (string, error) {
 	args := m.Called(t, options)
+
 	return args.String(0), args.Error(1)
 }
 
 func (m *MockTerragruntExecutor) TgDestroyAllE(t *testing.T, options *terraform.Options) (string, error) {
 	args := m.Called(t, options)
+
 	return args.String(0), args.Error(1)
 }
 
@@ -35,6 +37,7 @@ type MockCommandExecutor struct {
 
 func (m *MockCommandExecutor) RunCommand(cmdName string, args []string, dir string, envVars map[string]string) ([]byte, error) {
 	argsCalled := m.Called(cmdName, args, dir, envVars)
+
 	return argsCalled.Get(0).([]byte), argsCalled.Error(1)
 }
 

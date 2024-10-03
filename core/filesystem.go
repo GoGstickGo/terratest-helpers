@@ -26,14 +26,17 @@ func (OsFileSystem) ReadDir(dirname string) ([]os.DirEntry, error) {
 }
 
 func (OsFileSystem) RemoveAll(path string) error {
+
 	return os.RemoveAll(path)
 }
 
 func (OsFileSystem) ReadFile(path string) ([]byte, error) {
+
 	return os.ReadFile(path)
 }
 
 func (OsFileSystem) WriteFile(filename string, data []byte, perm fs.FileMode) error {
+
 	return os.WriteFile(filename, data, perm)
 }
 
@@ -90,6 +93,7 @@ func UpdateVarsFile(t *testing.T, cfg RunTime, fs FileSystem) ([]byte, error) {
 	}
 
 	logger.Log(t, "Updated "+cfg.VarsFile)
+
 	return originalContent, nil
 }
 
@@ -97,5 +101,6 @@ func UpdateVarsFile(t *testing.T, cfg RunTime, fs FileSystem) ([]byte, error) {
 func RestoreVarsFile(t *testing.T, cfg RunTime, fs FileSystem) error {
 	rootVarsPath := filepath.Join(cfg.Paths.TerragruntDir, cfg.VarsFile)
 	logger.Log(t, "Restore "+cfg.VarsFile)
+
 	return fs.WriteFile(rootVarsPath, []byte(cfg.Content), 0644)
 }

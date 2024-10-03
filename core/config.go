@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -94,3 +95,5 @@ func getEnvVarDuration(key string, defaultValue time.Duration) time.Duration {
 
 	return time.Duration(tempInt) * time.Minute
 }
+
+var ErrFailedToReadDirectory = errors.New("failed to read directory")

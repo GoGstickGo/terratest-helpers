@@ -14,11 +14,11 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
-// TerragruntExecutor abstracts Terragrunt execution methods
+// TerragruntExecutor abstracts Terragrunt execution methods.
 type Executor interface {
 	TgApplyAllE(t *testing.T, options *terraform.Options) (string, error)
 	TgDestroyAllE(t *testing.T, options *terraform.Options) (string, error)
-	// Add other methods like TgInitAllE, TgDestroyAllE if needed
+	// Add other methods like TgInitAllE, TgDestroyAllE if needed.
 }
 
 type RealTerragruntExecutor struct{}
@@ -31,20 +31,20 @@ func (e *RealTerragruntExecutor) TgDestroyAllE(t *testing.T, options *terraform.
 	return terraform.TgDestroyAllE(t, options)
 }
 
-// CommandExecutor abstracts command execution
+// CommandExecutor abstracts command execution.
 type CommandExecutor interface {
 	RunCommand(cmdName string, args []string, dir string, envVars map[string]string) ([]byte, error)
 }
 
-// RealCommandExecutor executes real system commands
+// RealCommandExecutor executes real system commands.
 type RealCommandExecutor struct{}
 
 func (e *RealCommandExecutor) RunCommand(cmdName string, args []string, dir string, envVars map[string]string) ([]byte, error) {
 	cmd := exec.Command(cmdName, args...)
 	cmd.Dir = dir
 
-	// Prepare environment variables
-	cmd.Env = os.Environ() // Start with existing environment variables
+	// Prepare environment variables.
+	cmd.Env = os.Environ() // Start with existing environment variables.
 	for key, value := range envVars {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
@@ -70,7 +70,7 @@ func tGiNit(t *testing.T, terra *terraform.Options, config core.RunTime, executo
 		envVars["TF_LOG"] = "DEBUG"
 	}
 
-	// Command and arguments
+	// Command and arguments.
 	cmdName := "terragrunt"
 	args := []string{"run-all", "init", "--terragrunt-non-interactive"}
 
@@ -80,27 +80,33 @@ func tGiNit(t *testing.T, terra *terraform.Options, config core.RunTime, executo
 		logger.Log(t, "init output: %s\n", string(output))
 	}
 
-	// Check for misconfigured plugin-cache
+	// Check for misconfigured plugin-cache.
 	checkStr := []string{"cache", "previously"}
 	for _, subStr := range checkStr {
 		if !strings.ContainsAny(string(output), subStr) {
 			if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
+
 				return fmt.Errorf("clearing chache folder failed: %v", err)
 			}
 			if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
+
 				return fmt.Errorf("restore vars file failed: %v", err)
 			}
+
 			return fmt.Errorf("\nplugin cache out of order:\n %s", string(output))
 		}
 	}
 
 	if err != nil {
 		if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
+
 			return fmt.Errorf("clearing chache folder failed: %v", err)
 		}
 		if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
+
 			return fmt.Errorf("restore vars file failed: %v", err)
 		}
+
 		return fmt.Errorf("%v\nOutput:\n%s", err, output)
 	}
 	logger.Log(t, "terragrunt init completed")
@@ -112,6 +118,7 @@ func Apply(t *testing.T, options *terraform.Options, executor Executor, config c
 
 	if config.IsPluginCache {
 		if err := tGiNit(t, options, config, cmdExecutor); err != nil {
+
 			return fmt.Errorf("terragrunt init failed: %v", err)
 		}
 	}
@@ -126,16 +133,20 @@ func Apply(t *testing.T, options *terraform.Options, executor Executor, config c
 	output, err := executor.TgApplyAllE(t, options)
 	if err != nil {
 		if config.IsPluginCache {
-			// Remove cached files
+			// Remove cached files.
 			if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
+
 				return fmt.Errorf("error clearing cache folder: %v", err)
 			}
 		}
 		if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
+
 			return fmt.Errorf("restore vars file failed: %v", err)
 		}
+
 		return fmt.Errorf("failed to apply Terragrunt ,output: %s, error: %v", output, err)
 	}
+
 	return nil
 }
 
@@ -144,6 +155,7 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 
 	if config.IsPluginCache {
 		if err := tGiNit(t, options, config, cmdExecutor); err != nil {
+
 			return fmt.Errorf("terragrunt init failed: %v", err)
 		}
 	}
@@ -152,14 +164,17 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 	stdout, err := executor.TgDestroyAllE(t, options)
 	if err != nil {
 		if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
+
 			return fmt.Errorf("restore vars file failed: %v", err)
 		}
+
 		return fmt.Errorf("failed to destroy with Terragrunt ,output: %s, error: %v", stdout, err)
 	}
 
 	if config.IsPluginCache {
-		// Remove cached files
+		// Remove cached files.
 		if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
+
 			return fmt.Errorf("error clearing cache folder: %v", err)
 		}
 	}
@@ -168,11 +183,12 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 
 	ec2Client, err := awsutils.LoadEC2Client(parameters.AWSRegion)
 	if err != nil {
+
 		return fmt.Errorf("error loading EC2 client: %v", err)
 	}
 
 	if restore {
-		// Restore the original content of root_vars.hcl
+		// Restore the original content of root_vars.hcl.
 		if err = core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
 			errs = append(errs, fmt.Errorf("error restoring %s: %v", config.VarsFile, err))
 		}
@@ -181,8 +197,10 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 		}
 	}
 	if len(errs) > 0 {
+
 		return fmt.Errorf("restore failed: %v", errs)
 	}
+
 	return nil
 }
 
