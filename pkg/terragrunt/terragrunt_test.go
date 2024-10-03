@@ -1,16 +1,18 @@
-package terragrunt
+package terragrunt_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/GoGstickGo/terratest-helpers/core"
 	"github.com/GoGstickGo/terratest-helpers/pkg/parameters"
+	"github.com/GoGstickGo/terratest-helpers/pkg/terragrunt"
+	"github.com/GoGstickGo/terratest-helpers/pkg/testutils"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type MockTerragruntExecutor struct {
@@ -19,11 +21,13 @@ type MockTerragruntExecutor struct {
 
 func (m *MockTerragruntExecutor) TgApplyAllE(t *testing.T, options *terraform.Options) (string, error) {
 	args := m.Called(t, options)
+
 	return args.String(0), args.Error(1)
 }
 
 func (m *MockTerragruntExecutor) TgDestroyAllE(t *testing.T, options *terraform.Options) (string, error) {
 	args := m.Called(t, options)
+
 	return args.String(0), args.Error(1)
 }
 
@@ -33,6 +37,7 @@ type MockCommandExecutor struct {
 
 func (m *MockCommandExecutor) RunCommand(cmdName string, args []string, dir string, envVars map[string]string) ([]byte, error) {
 	argsCalled := m.Called(cmdName, args, dir, envVars)
+
 	return argsCalled.Get(0).([]byte), argsCalled.Error(1)
 }
 
@@ -54,6 +59,7 @@ func (m *MockSleeper) Sleep(duration time.Duration) {
 }
 
 func TestMockTgApply_Success(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -71,14 +77,15 @@ func TestMockTgApply_Success(t *testing.T) {
 	}
 
 	// Call the function under test
-	err := TgApply(t, options, mockExecutor, config, cmdMockExecutor)
+	err := terragrunt.Apply(t, options, mockExecutor, config, cmdMockExecutor)
 
 	// Assertions
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	mockExecutor.AssertExpectations(t)
 }
 
 func TestMockTgDestroy_Success(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -96,14 +103,15 @@ func TestMockTgDestroy_Success(t *testing.T) {
 	}
 
 	// Call the function under test
-	err := TgDestroy(t, options, mockExecutor, config, cmdMockExecutor, false)
+	err := terragrunt.Destroy(t, options, mockExecutor, config, cmdMockExecutor, false)
 
 	// Assertions
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	mockExecutor.AssertExpectations(t)
 }
 
 func TestMockTgDestroy_Failure(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -119,15 +127,16 @@ func TestMockTgDestroy_Failure(t *testing.T) {
 	config := core.RunTime{}
 
 	// Call the function under test
-	err := TgDestroy(t, options, mockExecutor, config, cmdMockExecutor, false)
+	err := terragrunt.Destroy(t, options, mockExecutor, config, cmdMockExecutor, false)
 
 	// Assertions
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "restore vars file failed")
 	mockExecutor.AssertExpectations(t)
 }
 
 func TestMockTgApply_Failure(t *testing.T) {
+	t.Parallel()
 	// Create a mock executors
 	mockExecutor := new(MockTerragruntExecutor)
 
@@ -146,52 +155,19 @@ func TestMockTgApply_Failure(t *testing.T) {
 	// You can create a mock for plugin_cache.ClearFolder if it interacts with external systems
 
 	// Call the function under test
-	err := TgApply(t, options, mockExecutor, config, cmdMockExecutor)
+	err := terragrunt.Apply(t, options, mockExecutor, config, cmdMockExecutor)
 
 	// Assertions
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "restore vars file failed")
 	mockExecutor.AssertExpectations(t)
-}
-
-func TestMockPauseTest(t *testing.T) {
-	// Create mock logger
-	mockLogger := new(MockLogger)
-
-	// Create mock sleeper
-	mockSleeper := new(MockSleeper)
-
-	// Prepare config
-	pauseDuration := 2 * time.Second
-	config := core.RunTime{
-		Pause: pauseDuration,
-	}
-
-	// Set up expectations for the logger
-	mockLogger.On(
-		"Log",
-		t,
-		"Pause test for",
-		pauseDuration,
-		"before starting destruction of the environment",
-	).Return()
-
-	// Set up expectations for the sleeper
-	mockSleeper.On("Sleep", pauseDuration).Return()
-
-	// Call the function under test
-	PauseTest(t, config, mockLogger, mockSleeper)
-
-	// Assertions
-	mockLogger.AssertExpectations(t)
-	mockSleeper.AssertExpectations(t)
 }
 
 func TestTerragrunt(t *testing.T) {
 	t.Parallel()
 
-	os.Setenv("TT_TERRAGRUNT_ROOT_DIR", "../../example")
-	os.Setenv("TT_PAUSE", "2")
+	t.Setenv("TT_TERRAGRUNT_ROOT_DIR", "../../example")
+	t.Setenv("TT_PAUSE", "2")
 	config := core.NewConfig()
 
 	originalContent, err := core.UpdateVarsFile(t, config, core.OsFileSystem{})
@@ -209,18 +185,18 @@ func TestTerragrunt(t *testing.T) {
 	})
 
 	// Create an instance of the real executor
-	executor := &RealTerragruntExecutor{}
-	cmdExecutor := &RealCommandExecutor{}
-	logger := &RealLogger{}
-	sleeper := &RealSleeper{}
+	executor := &terragrunt.RealTerragruntExecutor{}
+	cmdExecutor := &terragrunt.RealCommandExecutor{}
+	logger := &testutils.RealLogger{}
+	sleeper := &testutils.RealSleeper{}
 
 	defer func() {
-		if err := TgDestroy(t, iamOptions, executor, config, cmdExecutor, true); err != nil {
+		if err := terragrunt.Destroy(t, iamOptions, executor, config, cmdExecutor, true); err != nil {
 			t.Fatalf("Error: %v\n", err)
 		}
 	}()
 
-	if err := TgApply(t, iamOptions, executor, config, cmdExecutor); err != nil {
+	if err := terragrunt.Apply(t, iamOptions, executor, config, cmdExecutor); err != nil {
 		t.Fatalf("Error: %v\n", err)
 	}
 
@@ -234,12 +210,12 @@ func TestTerragrunt(t *testing.T) {
 	})
 
 	defer func() {
-		if err := TgDestroy(t, iam2Options, executor, config, cmdExecutor, false); err != nil {
+		if err := terragrunt.Destroy(t, iam2Options, executor, config, cmdExecutor, false); err != nil {
 			t.Fatalf("Error: %v\n", err)
 		}
 	}()
 
-	if err := TgApply(t, iam2Options, executor, config, cmdExecutor); err != nil {
+	if err := terragrunt.Apply(t, iam2Options, executor, config, cmdExecutor); err != nil {
 		t.Fatalf("Error: %v\n", err)
 	}
 
@@ -248,5 +224,5 @@ func TestTerragrunt(t *testing.T) {
 	assert.Equal(t, policy2Arn, "arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest2-us-east-1", "Policy arn should match arn:aws:iam::"+parameters.AWSAccountID+":policy/DummyTest-us-east-1")
 
 	// Pause test
-	PauseTest(t, config, logger, sleeper)
+	testutils.PauseTest(t, config, logger, sleeper)
 }

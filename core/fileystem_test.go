@@ -15,27 +15,31 @@ type MockFileSystem struct {
 	mock.Mock
 }
 
-// Mock ReadDir method
+// Mock ReadDir method.
 func (m *MockFileSystem) ReadDir(dirname string) ([]os.DirEntry, error) {
 	args := m.Called(dirname)
+
 	return args.Get(0).([]os.DirEntry), args.Error(1)
 }
 
-// Mock RemoveAll method
+// Mock RemoveAll method.
 func (m *MockFileSystem) RemoveAll(path string) error {
 	args := m.Called(path)
+
 	return args.Error(0)
 }
 
-// Mock ReadFile method
+// Mock ReadFile method.
 func (m *MockFileSystem) ReadFile(path string) ([]byte, error) {
 	args := m.Called(path)
+
 	return args.Get(0).([]byte), args.Error(1)
 }
 
-// Mock WriteFile method
+// Mock WriteFile method.
 func (m *MockFileSystem) WriteFile(filename string, data []byte, perm fs.FileMode) error {
 	args := m.Called(filename, data, perm)
+
 	return args.Error(0)
 }
 
@@ -45,25 +49,30 @@ type MockDirEntry struct {
 }
 
 func (m MockDirEntry) Name() string {
+
 	return m.name
 }
 
 func (m MockDirEntry) IsDir() bool {
+
 	return m.isDir
 }
 
 func (m MockDirEntry) Type() fs.FileMode {
 	if m.isDir {
+
 		return fs.ModeDir
 	}
+
 	return 0
 }
 
 func (m MockDirEntry) Info() (fs.FileInfo, error) {
-	return nil, nil
+	return nil, core.ErrFailedToReadDirectory
 }
 
 func TestMockClearFolder(t *testing.T) {
+	t.Parallel()
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 
@@ -98,6 +107,7 @@ func TestMockClearFolder(t *testing.T) {
 }
 
 func TestMockUpdateVarsFile(t *testing.T) {
+	t.Parallel()
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 
@@ -135,6 +145,7 @@ func TestMockUpdateVarsFile(t *testing.T) {
 }
 
 func TestMockRestoreVarsFile(t *testing.T) {
+	t.Parallel()
 	// Create a mock file system
 	mockFS := new(MockFileSystem)
 

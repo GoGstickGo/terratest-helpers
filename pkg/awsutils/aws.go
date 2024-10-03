@@ -13,7 +13,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-// AWS config
+// AWS config.
 type DefaultAWSConfigLoader struct{}
 
 // LoadConfig loads the AWS configuration using the AWS SDK.
@@ -34,7 +34,7 @@ func LoadEC2Client(region string) (*ec2.Client, error) {
 	// Load AWS configuration
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
-		return nil, fmt.Errorf("failed to load AWS config: %v", err)
+		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}
 
 	// Return the EC2 client
@@ -49,7 +49,7 @@ func RemoveENI(t *testing.T, vpcID string, svc EC2Client) (int32, error) {
 	describeInput := &ec2.DescribeNetworkInterfacesInput{}
 	result, err := svc.DescribeNetworkInterfaces(context.TODO(), describeInput)
 	if err != nil {
-		return 0, fmt.Errorf("error describing network interfaces: %v", err)
+		return 0, fmt.Errorf("error describing network interfaces: %w", err)
 	}
 
 	// Delete each unused network interface
@@ -62,7 +62,7 @@ func RemoveENI(t *testing.T, vpcID string, svc EC2Client) (int32, error) {
 
 			_, deleteErr := svc.DeleteNetworkInterface(context.TODO(), deleteInput)
 			if deleteErr != nil {
-				fmt.Printf("error deleting ENI: %v", deleteErr)
+				logger.Log(t, "Error deleting ENI", deleteErr) // Log the error for debugging purposes("error deleting ENI: %v", deleteErr).
 			} else {
 				counter++
 			}
@@ -75,7 +75,7 @@ func RemoveENI(t *testing.T, vpcID string, svc EC2Client) (int32, error) {
 }
 
 func DeleteWorkMailOrganization(t *testing.T, orgID string, client WorkMailClient) error {
-	// Load the default AWS configuration
+	// Load the default AWS configuration.
 
 	logger.Log(t, "Remove Wokrmail ORGId:", orgID)
 
@@ -83,18 +83,18 @@ func DeleteWorkMailOrganization(t *testing.T, orgID string, client WorkMailClien
 	_, err := loader.LoadConfig(context.TODO(), parameters.AWSRegion)
 
 	if err != nil {
-		return fmt.Errorf("AWS Auth error %v", err)
+		return fmt.Errorf("AWS Auth error %w", err)
 	}
 
-	// Create the input parameters for the DeleteOrganization API call
+	// Create the input parameters for the DeleteOrganization API call.
 	input := &workmail.DeleteOrganizationInput{
 		OrganizationId: aws.String(orgID),
 	}
 
-	// Call the DeleteOrganization API
+	// Call the DeleteOrganization API.
 	_, err = client.DeleteOrganization(context.TODO(), input)
 	if err != nil {
-		return fmt.Errorf("failed to delete WorkMail organization: %v", err)
+		return fmt.Errorf("failed to delete WorkMail organization: %w", err)
 	}
 
 	return nil
