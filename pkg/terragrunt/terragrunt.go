@@ -202,9 +202,7 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 	}
 
 	return nil
-}
-
-/*func UpdateTerraformHook(dir, key, newLine string) error {
+} /*func UpdateTerraformHook(dir, key, newLine string) error {
 	log.Print("Update terraform_hook")
 	rootTGPath := filepath.Join(dir, "terragrunt.hcl")
 	// Read the content of the file
