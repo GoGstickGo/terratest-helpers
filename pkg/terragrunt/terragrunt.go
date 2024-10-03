@@ -86,11 +86,11 @@ func tGiNit(t *testing.T, terra *terraform.Options, config core.RunTime, executo
 		if !strings.ContainsAny(string(output), subStr) {
 			if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
 
-				return fmt.Errorf("clearing chache folder failed: %v", err)
+				return fmt.Errorf("clearing chache folder failed: %w", err)
 			}
 			if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
 
-				return fmt.Errorf("restore vars file failed: %v", err)
+				return fmt.Errorf("restore vars file failed: %w", err)
 			}
 
 			return fmt.Errorf("\nplugin cache out of order:\n %s", string(output))
@@ -100,14 +100,14 @@ func tGiNit(t *testing.T, terra *terraform.Options, config core.RunTime, executo
 	if err != nil {
 		if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
 
-			return fmt.Errorf("clearing chache folder failed: %v", err)
+			return fmt.Errorf("clearing chache folder failed: %w", err)
 		}
 		if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
 
-			return fmt.Errorf("restore vars file failed: %v", err)
+			return fmt.Errorf("restore vars file failed: %w", err)
 		}
 
-		return fmt.Errorf("%v\nOutput:\n%s", err, output)
+		return fmt.Errorf("%w\nOutput:\n%s", err, output)
 	}
 	logger.Log(t, "terragrunt init completed")
 
@@ -119,7 +119,7 @@ func Apply(t *testing.T, options *terraform.Options, executor Executor, config c
 	if config.IsPluginCache {
 		if err := tGiNit(t, options, config, cmdExecutor); err != nil {
 
-			return fmt.Errorf("terragrunt init failed: %v", err)
+			return fmt.Errorf("terragrunt init failed: %w", err)
 		}
 	}
 
@@ -136,15 +136,15 @@ func Apply(t *testing.T, options *terraform.Options, executor Executor, config c
 			// Remove cached files.
 			if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
 
-				return fmt.Errorf("error clearing cache folder: %v", err)
+				return fmt.Errorf("error clearing cache folder: %w", err)
 			}
 		}
 		if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
 
-			return fmt.Errorf("restore vars file failed: %v", err)
+			return fmt.Errorf("restore vars file failed: %w", err)
 		}
 
-		return fmt.Errorf("failed to apply Terragrunt ,output: %s, error: %v", output, err)
+		return fmt.Errorf("failed to apply Terragrunt ,output: %s, error: %w", output, err)
 	}
 
 	return nil
@@ -156,7 +156,7 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 	if config.IsPluginCache {
 		if err := tGiNit(t, options, config, cmdExecutor); err != nil {
 
-			return fmt.Errorf("terragrunt init failed: %v", err)
+			return fmt.Errorf("terragrunt init failed: %w", err)
 		}
 	}
 
@@ -165,17 +165,17 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 	if err != nil {
 		if err := core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
 
-			return fmt.Errorf("restore vars file failed: %v", err)
+			return fmt.Errorf("restore vars file failed: %w", err)
 		}
 
-		return fmt.Errorf("failed to destroy with Terragrunt ,output: %s, error: %v", stdout, err)
+		return fmt.Errorf("failed to destroy with Terragrunt ,output: %s, error: %w", stdout, err)
 	}
 
 	if config.IsPluginCache {
 		// Remove cached files.
 		if err := core.ClearFolder(t, config, core.OsFileSystem{}); err != nil {
 
-			return fmt.Errorf("error clearing cache folder: %v", err)
+			return fmt.Errorf("error clearing cache folder: %w", err)
 		}
 	}
 
@@ -184,16 +184,16 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 	ec2Client, err := awsutils.LoadEC2Client(parameters.AWSRegion)
 	if err != nil {
 
-		return fmt.Errorf("error loading EC2 client: %v", err)
+		return fmt.Errorf("error loading EC2 client: %w", err)
 	}
 
 	if restore {
 		// Restore the original content of root_vars.hcl.
 		if err = core.RestoreVarsFile(t, config, core.OsFileSystem{}); err != nil {
-			errs = append(errs, fmt.Errorf("error restoring %s: %v", config.VarsFile, err))
+			errs = append(errs, fmt.Errorf("error restoring %s: %w", config.VarsFile, err))
 		}
 		if _, err := awsutils.RemoveENI(t, parameters.VPCId, ec2Client); err != nil {
-			errs = append(errs, fmt.Errorf("error deleting AWS EC2 ENIs: %v", err))
+			errs = append(errs, fmt.Errorf("error deleting AWS EC2 ENIs: %w", err))
 		}
 	}
 	if len(errs) > 0 {
@@ -210,7 +210,7 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 	// Read the content of the file
 	content, err := os.ReadFile(rootTGPath)
 	if err != nil {
-		return fmt.Errorf("error reading file: %v", err)
+		return fmt.Errorf("error reading file: %w", err)
 	}
 
 	// Convert content to string
@@ -227,7 +227,7 @@ func Destroy(t *testing.T, options *terraform.Options, executor Executor, config
 	// Write the updated content back to the file
 	err = os.WriteFile(rootTGPath, []byte(strings.Join(lines, "\n")), 0644)
 	if err != nil {
-		return fmt.Errorf("error writing to file: %v", err)
+		return fmt.Errorf("error writing to file: %w", err)
 	}
 
 	return nil
